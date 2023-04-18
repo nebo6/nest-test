@@ -7,44 +7,52 @@ import {
   Req,
   Res,
   Delete,
-  UseInterceptors,
+  Param,
+  ParseIntPipe,
+  Body,
 } from '@nestjs/common'
-import { FileInterceptor } from '@nestjs/platform-express'
 import { Request, Response } from 'express'
+import { UserService } from './user.service'
 
 @Controller('users')
 export class UserController {
-  constructor() {
-    //   private readonly userService: UserService
-  }
+  constructor(private readonly UserService: UserService) {}
 
   @Get('/')
-  async getAllUsers(@Req() req: Request, @Res() res: Response) {
-    // get all users
+  async getAllUsers(@Res() res: Response) {
+    const users = await this.UserService.getAllUsers()
+    return res.send({
+      status: 'ok',
+      data: users,
+    })
   }
 
   @Get('/:id')
-  async getUser(@Req() req: Request, @Res() res: Response) {
-    // get user
+  async getUser(@Param('id', ParseIntPipe) id: number, @Res() res: Response) {
+    const userData = await this.UserService.getUserData(id)
+    return res.send({ status: 'ok', data: userData })
   }
 
   @Post('/')
-  @UseInterceptors(FileInterceptor(''))
   async createUser(@Req() req: Request, @Res() res: Response) {
-    // get user
-    console.log(req.headers)
-
+    await this.UserService.createUser(req.body)
     return res.send({ status: 'ok' })
   }
 
   @Put('/:id')
-  async updateUser(@Req() req: Request, @Res() res: Response) {
-    // get user
+  async updateUser(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() body: any,
+    @Res() res: Response,
+  ) {
+    await this.UserService.updateUserData(id, body)
+    // update user
+    return res.send({ status: 'ok' })
   }
 
   @Patch('/:id')
   async updateUserField(@Req() req: Request, @Res() res: Response) {
-    // get user
+    // updateUserField
   }
 
   @Delete('/:id')
