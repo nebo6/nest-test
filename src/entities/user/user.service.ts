@@ -4,6 +4,7 @@ import { Repository } from 'typeorm'
 import { genSalt, hash } from 'bcrypt'
 
 import { User } from './user.entity'
+import { UpdateUserDto } from './dto/updateUser.dto'
 
 @Injectable()
 export class UserService {
@@ -11,13 +12,19 @@ export class UserService {
     @InjectRepository(User) private readonly userRepository: Repository<User>,
   ) {}
 
-  availableFields = ['nameFirst', 'nameLast', 'email', 'gender', 'birthDate']
+  availableFields = [
+    'nameFirst',
+    'nameLast',
+    'email',
+    'gender',
+    'birthDate',
+  ] as const
 
   // Filter body's fields from available fields list
   private filterFields(body: Record<string, any>) {
     const filteredBody: Record<string, any> = {}
     Object.keys(body).filter((k) => {
-      if (this.availableFields.includes(k)) {
+      if (this.availableFields[k]) {
         filteredBody[k] = body[k]
       }
     })
@@ -39,7 +46,7 @@ export class UserService {
   // Get all users
   public async getAllUsers() {
     return await this.userRepository.find({
-      select: ['id', ...(this.availableFields as any)],
+      select: ['id', ...this.availableFields],
     })
   }
 
@@ -47,12 +54,17 @@ export class UserService {
   public async getUserData(id: number) {
     return await this.userRepository.findOne({
       where: { id },
-      select: ['id', ...(this.availableFields as any)],
+      select: ['id', ...this.availableFields],
     })
   }
 
   // Update user data whole
-  public async updateUserData(id: number, body: any) {
+  public async updateUserData(id: number, body: UpdateUserDto) {
     return await this.userRepository.update({ id }, this.filterFields(body))
+  }
+
+  // Delete user by id
+  public async deleteUser(id: number) {
+    return await this.userRepository.delete(id)
   }
 }

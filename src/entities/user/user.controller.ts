@@ -3,7 +3,6 @@ import {
   Get,
   Post,
   Put,
-  Patch,
   Req,
   Res,
   Delete,
@@ -13,6 +12,7 @@ import {
 } from '@nestjs/common'
 import { Request, Response } from 'express'
 import { UserService } from './user.service'
+import { UpdateUserDto } from './dto/updateUser.dto'
 
 @Controller('users')
 export class UserController {
@@ -42,21 +42,16 @@ export class UserController {
   @Put('/:id')
   async updateUser(
     @Param('id', ParseIntPipe) id: number,
-    @Body() body: any,
+    @Body() body: UpdateUserDto,
     @Res() res: Response,
   ) {
     await this.UserService.updateUserData(id, body)
-    // update user
     return res.send({ status: 'ok' })
   }
 
-  @Patch('/:id')
-  async updateUserField(@Req() req: Request, @Res() res: Response) {
-    // updateUserField
-  }
-
   @Delete('/:id')
-  async deleteUser(@Req() req: Request, @Res() res: Response) {
-    // get user
+  async deleteUser(@Param('id') id: number, @Res() res: Response) {
+    await this.UserService.deleteUser(id)
+    return res.send({ status: 'ok' })
   }
 }
